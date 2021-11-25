@@ -27,7 +27,7 @@ DEBUG = True
 
 APPEND_SLASH = True
 
-ALLOWED_HOSTS = ["moapp.eu-gb.mybluemix.net","moapp.eu-gb.cf.appdomain.cloud", "127.0.0.1"]
+ALLOWED_HOSTS = ["moapp.eu-gb.mybluemix.net", "127.0.0.1"]
 
 # Application definition
 
