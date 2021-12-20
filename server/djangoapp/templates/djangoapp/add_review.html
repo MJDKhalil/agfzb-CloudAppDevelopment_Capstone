@@ -8,37 +8,119 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.0/js/bootstrap-datepicker.js"></script>
-
+    <script src="https://unpkg.com/bootstrap-table@1.18.2/dist/bootstrap-table.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.18.2/dist/extensions/filter-control/bootstrap-table-filter-control.min.js"></script>
+    
 </head>
   <body>
-          {% comment %} <nav class="navbar navbar-light bg-light">
-                <div class="container-fluid">
-                    <div class="navbar-header">
-                        <a class="navbar-brand" href="#">Dealership Review</a>
-                    </div>
-                    <ul class="nav navbar-nav navbar-right">
-                        {% if user.is_authenticated %}
-                        <li>
-                            <a class="btn btn-link" href="#">{{ user.first_name }}({{ user.username }})</a>
-                            <a class="btn btn-link" href="{% url 'djangoapp:logout' %}">Logout</a>
-                        </li>
-                        {% else %}
-                        <li>
-                            <form class="form-inline" action="{% url 'djangoapp:login' %}" method="post">
-                                {% csrf_token %}
-                                <div class="input-group">
-                                    <input type="text" class="form-control" placeholder="Username" name="username" >
-                                    <input type="password" class="form-control" placeholder="Password" name="psw" >
-                                    <button class="btn btn-primary" type="submit">Login</button>
-                                    <a class="btn btn-link" href="{% url 'djangoapp:registration' %}">Sign Up</a>
-                                </div>
-                            </form>
-                        </li>
-                        {% endif %}
-                    </ul>
+    <header>
+        <nav class="navbar navbar-light bg-light">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">Dealership Review</a>
                 </div>
-         </nav> {% endcomment %}
+                <ul class="nav navbar-nav navbar-right">
+                    {% if user.is_authenticated %}
+                    <li>
+                        <a class="btn btn-link" href="#">{{ user.first_name }}({{ user.username }})</a>
+                        <a class="btn btn-link" href="{% url 'djangoapp:logout' %}">Logout</a>
+                    </li>
+                    {% else %}
+                    <li>
+                        <form class="form-inline" action="{% url 'djangoapp:login' %}" method="post">
+                            {% csrf_token %}
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Username" name="username">
+                                <input type="password" class="form-control" placeholder="Password" name="psw">
+                                <button class="btn btn-primary" type="submit">Login</button>
+                                <a class="btn btn-link" href="{% url 'djangoapp:registration' %}">Sign Up</a>
+                            </div>
+                        </form>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav>
+      </header>
+
     
     <!--Add review form here -->
+    <div class="hero"></div>
+    <section class="ftco-section">
+		<div class="container">
+			<div class="row justify-content-center">
+				<div class="col-lg-10 col-md-12">
+					<div class="wrapper">
+						<div class="row no-gutters">
+							<div class="col-md-12 d-flex align-items-stretch">
+								<div class="contact-wrap w-100 p-md-5 p-4">
+									<h3 class="mb-4 aboutus-title">Add Review</h3>
+									<div id="form-message-warning" class="mb-4"></div> 
+                                    <div id="form-message-success" class="mb-4">
+                                    Fill up the form to send your review 
+                                    </div>
+									<form method="POST" id="reviewForm" name="reviewForm" action="{% url 'djangoapp:add_review' dealer_id %}">
+                                        {% csrf_token %}
+										<div class="row">
+                                            <div class="col-md-12">
+												<div class="form-group">
+													<textarea name="message" class="form-control" id="content" cols="30" rows="2" placeholder="Your Review" required></textarea>
+												</div>
+                                            </div><br><br>
+                                            <div class="col-md-12">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="purchasecheck" name="purchasecheck" onclick="ShowHideDiv(this)">
+                                                    <label class="form-check-label" for="purchasecheck" style="color: rgb(39, 41, 43);" >
+                                                        I have purchased this car before from this dealer. <label style="color: rgb(189, 184, 184); font-size: smaller; ">(choose purchased car information below if checked)</label>
+                                                    </label>
+                                                </div>
+                                            </div><br><br>
+											<div id="dvCarInfo" style="display: none">
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label class="form-label" for="car"><b>Select your car <label style="color: rgb(189, 184, 184); font-size: smaller; ">(model-make-year)</label>:</b></label>
+                                                        <select name="car" id="car" class="form-select">
+                                                        {% for car in cars %}
+                                                            <option value={{car.id}}>{{car.name}}-{{car.make.name}}-{{ car.year|date:"Y" }}</option>
+                                                        {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-12"> 
+                                                    <div class="form-group">
+                                                        <label class="form-label" for="car"><b>Select your purchase date:</b></label>
+                                                        <input class="date-own form-control" type="date" id="purchasedate" name="purchasedate" aria-describedby="date-format" placeholder="mm/dd/yyyy" />
+                                                    </div>
+                                                </div>
+                                            </div><br>
+                                            <div class="col-md-12">
+												<div class="form-group">
+													<input type="submit" value="Add Review" class="btn btn-custom">
+													<div class="submitting"></div>
+												</div>
+											</div>
+										</div>
+									</form>
+								</div>
+							</div>
+							
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
     </body>
+
+    {% comment %} <script type="text/javascript">
+        $('.date-own').datepicker({
+           format: 'mm/dd/yyyy'
+         });
+   </script> {% endcomment %}
+    <script type="text/javascript">
+        function ShowHideDiv(purchasecheck) {
+            var dvCarInfo = document.getElementById("dvCarInfo");
+            dvCarInfo.style.display = purchasecheck.checked ? "block" : "none";
+        }
+    </script>
 </html>

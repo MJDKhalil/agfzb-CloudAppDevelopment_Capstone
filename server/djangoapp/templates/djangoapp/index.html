@@ -12,12 +12,15 @@
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-        
+        <script src="https://unpkg.com/bootstrap-table@1.18.2/dist/bootstrap-table.min.js"></script>
+        <script src="https://unpkg.com/bootstrap-table@1.18.2/dist/extensions/filter-control/bootstrap-table-filter-control.min.js"></script>
+
   </head>
 
   <body>
 
     <!--Add a nav bar here -->
+    <header>
       <nav class="navbar navbar-light bg-light">
           <div class="container-fluid">
               <div class="navbar-header">
@@ -45,13 +48,51 @@
               </ul>
           </div>
       </nav>
+    </header>
 
 
     <!--Add a dealer table here -->
+
+    <div class="hero"></div>
+    <!--Add a dealer table here -->
+    <div class="container">
+        <div class="aboutus">
+            <h2 class="aboutus-title">Dealerships</h2>
+        </div>
+        <div class="wrap-table100">
+            <div class="table100 ver1 m-b-110">
+                <table class="table" id="table" data-filter-control="true">
+                    <thead>
+                        <tr class="row100 head">
+                            <th class="cell100 column1" data-field="id">ID</th>
+                            <th class="cell100 column1" data-field="name">Dealer Name</th>
+                            <th class="cell100 column1" data-field="city">City</th>
+                            <th class="cell100 column1" data-field="address">Address</th>
+                            <th class="cell100 column1" data-field="zip">Zip</th>
+                            <th class="cell100 column1" data-field="state" data-filter-control="select">State</th>
+                        </tr>
+                    </thead>
+                
+                    <tbody class="table100-body js-pscroll">
+                        {% for dealer in dealers %}
+                        <tr class="row100 body">
+                            <td class="cell100 column1">{{dealer.id}}</td>
+                            <td class="cell100 column1"><a href="{% url 'djangoapp:dealer_details' dealer.id %}">{{dealer.full_name}}</a></td>
+                            <td class="cell100 column1">{{dealer.city}}</td>
+                            <td class="cell100 column1">{{dealer.address}}</td>
+                            <td class="cell100 column1">{{dealer.zip}}</td>
+                            <td class="cell100 column1">{{dealer.st}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     
+    <hr>
      <div class="footer-dark">
         <footer>
-            <div class="container">
+            <div class="container-fluid">
                 <div class="row">
                     <div class="col-sm-6 col-md-3 item">
                         <h3>Services</h3>
@@ -79,9 +120,13 @@
             </div>
         </footer>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.bundle.min.js"></script>
 
   </body>
+
+    <script>
+        $(function() {
+        $('#table').bootstrapTable()
+        })
+    </script>
 
 </html>

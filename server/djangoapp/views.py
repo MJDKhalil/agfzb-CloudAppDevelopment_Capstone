@@ -2,17 +2,23 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
-# from .models import related models
-# from .restapis import related methods
+from .models import CarModel
+from .restapis import get_dealer_reviews_from_cf, get_dealers_by_state, get_dealers_from_cf, get_reviews_max_id, post_request
 from django.contrib.auth import login, logout, authenticate
-from django.contrib import messages
 from datetime import datetime
 import logging
 import json
+from django.template import RequestContext
+
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
+base_url = "https://27336090.eu-gb.apigw.appdomain.cloud/api"
 
+#Endpoints paths
+dealershipsPath = "/dealership"
+dealerReviewsPath = "/review"
+maxIdPath = "/maxid"
 
 # Create your views here.
 
@@ -24,7 +30,10 @@ def about(request):
 
 # Create a `contact` view to return a static contact page
 def contact(request):
-    return render(request, 'djangoapp/contact.html')
+    context = {}
+    if request.method == "POST":
+        context['message'] = "Your message has been sent."
+    return render(request, 'djangoapp/contact.html', context)
 
 # Create a `login_request` view to handle sign in request
 def login_request(request):
@@ -87,14 +96,60 @@ def registration_request(request):
 def get_dealerships(request):
     context = {}
     if request.method == "GET":
-        return render(request, 'djangoapp/index.html', context)
+        # Get dealers from the URL
+        dealerships = get_dealers_from_cf(base_url + dealershipsPath)
+        print(dealerships)
+        context['dealers'] = dealerships
+        # Return list of dealerships
+        return render(request,'djangoapp/index.html', context)
 
 
 # Create a `get_dealer_details` view to render the reviews of a dealer
 # def get_dealer_details(request, dealer_id):
 # ...
+def get_dealer_details(request, dealer_id):
+    context = {}
+    if request.method == "GET":
+        dealers = get_dealers_from_cf(base_url + dealershipsPath)
+        chosen_dealer = [dealer for dealer in dealers if dealer.id==dealer_id][0]
+        # Get dealer's reviews from the URL
+        dealerReviews = get_dealer_reviews_from_cf(base_url + dealerReviewsPath, dealer_id)
+        # Return a list of dealer's reviews
+        print(dealerReviews)
+        if 'error' not in dealerReviews:
+            context['reviews'] = dealerReviews
+        context['dealer_id'] = dealer_id
+        context['dealer_name'] = chosen_dealer.full_name
+        return render(request,'djangoapp/dealer_details.html', context)
 
 # Create a `add_review` view to submit a review
 # def add_review(request, dealer_id):
 # ...
-
+def add_review(request, dealer_id):
+    context = {}
+    if request.method == "GET":
+        cars = CarModel.objects.filter(dealerId = dealer_id)
+        context['cars'] = cars
+        context['dealer_id'] = dealer_id
+        return render(request,'djangoapp/add_review.html', context)
+    elif request.method == "POST":
+        review = dict()
+        review["id"] = get_reviews_max_id(base_url + maxIdPath) + 1
+        review["purchase"] = True if 'purchasecheck' in request.POST else False
+        review["review"] = request.POST['message']
+        review["dealership"] = dealer_id
+        review["name"] = request.user.first_name + " " + request.user.last_name
+        if review["purchase"] == True:
+            date_obj = datetime.strptime(request.POST['purchasedate'], '%Y-%m-%d')
+            formatedDate = date_obj.strftime("%m/%d/%Y")
+            review["purchase_date"] = str(formatedDate)
+            purchasedCar = get_object_or_404(CarModel, pk = request.POST['car'])
+            review["car_make"] = purchasedCar.make.name
+            review["car_model"] = purchasedCar.name
+            review["car_year"] = int(purchasedCar.year.strftime("%Y"))
+        json_payload = dict()
+        json_payload["review"] = review
+        print(json_payload)
+        url = base_url + dealerReviewsPath
+        response = post_request(json_payload,url,dealerId = dealer_id)
+        return redirect("djangoapp:dealer_details", dealer_id=dealer_id)
